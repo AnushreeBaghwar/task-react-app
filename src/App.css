@@ -39,3 +39,12 @@
 .NavIcon {
   padding: 0%;
 }
+.layout-bg {
+  background-image: url("./components/imgs/bg.jpg");
+  /* background-attachment: fixed;
+  width: 100px;
+  vertical-align: auto;
+  height: 400rem; */
+  /* background-repeat: no-repeat; */
+  background-size: cover;
+}
