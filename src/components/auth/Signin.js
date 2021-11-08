@@ -4,12 +4,14 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
 } from "firebase/auth";
-import { addDoc, collection } from "firebase/firestore";
 import { TextField, Button, FormControl, Typography } from "@mui/material";
-import { db } from "../../App";
 import { Link } from "react-router-dom";
+import { saveUser } from "../../helpers/user";
+import { useContext } from "react";
+import { AppStateContext } from "../../store/appContext";
 
 const Signin = () => {
+  const dispatch = useContext(AppStateContext).globalStateAndDispatch[1];
   const [otp, setOtp] = useState(0);
   const [num, setNum] = useState(0);
   const [showOtpPanel, setShowOtpPanel] = useState(false);
@@ -59,21 +61,16 @@ const Signin = () => {
           phoneNumber: user.phoneNumber,
         };
         saveUser(userDetails);
+        dispatch({
+          type: "SET_USER",
+          value: userDetails,
+        });
+
         // alert("signed in successfully");
         // console.log(user.phoneNumber);
       })
       .catch((error) => {
         console.log(error);
-      });
-  };
-  const saveUser = async (data) => {
-    await addDoc(collection(db, "users"), data)
-      .then((res) => {
-        console.log(res);
-        alert("done");
-      })
-      .catch((err) => {
-        console.log(err);
       });
   };
   return (
@@ -87,14 +84,17 @@ const Signin = () => {
           <Typography variant="h5">LOGIN</Typography>
           <TextField
             sx={{ width: "15rem" }}
-            type="number"
+            type="tel"
             onChange={(e) => {
               setNum(e.target.value);
             }}
             placeholder="Enter your 10 digit number"
+            inputProps={{
+              maxLength: 10,
+            }}
           ></TextField>
           <br />
-          <Button onClick={login} variant="contained">
+          <Button disabled={showOtpPanel} onClick={login} variant="contained">
             Submit
           </Button>
         </FormControl>
@@ -115,9 +115,12 @@ const Signin = () => {
 
             <TextField
               sx={{ width: "15rem" }}
-              type="number"
+              type="password"
               onChange={(e) => {
                 setOtp(e.target.value);
+              }}
+              inputProps={{
+                maxLength: 6,
               }}
             />
             <br />

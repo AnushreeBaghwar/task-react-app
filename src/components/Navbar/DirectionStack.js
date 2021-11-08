@@ -1,29 +1,15 @@
-import * as React from "react";
+import React, { useContext } from "react";
 import Stack from "@mui/material/Stack";
 import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
-import { BrowserRouter, Link } from "react-router-dom";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { Link } from "react-router-dom";
+import { AppStateContext } from "../../store/appContext";
+import { logout } from "../../helpers/user";
 
 function DirectionStack() {
-  const auth = getAuth();
-  const [showSignIn, setShowSignIn] = React.useState(true);
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setShowSignIn(false);
-    } else {
-      setShowSignIn(true);
-    }
-  });
-  const logout = () => {
-    signOut(auth)
-      .then(() => {
-        alert("logged out successfully");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+  const [appstate, dispatch] =
+    useContext(AppStateContext).globalStateAndDispatch;
+
   const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: "Prompt-Regular",
     color: "#fff",
@@ -31,24 +17,24 @@ function DirectionStack() {
   return (
     <div>
       <Stack sx={{ fontFamily: "Prompt-Regular" }} direction="row" spacing={3}>
-        <BrowserRouter>
-          <Link style={{ textDecoration: "none" }} to="/home">
-            <StyledTypography>Home</StyledTypography>
-          </Link>
-        </BrowserRouter>
+        <Link style={{ textDecoration: "none" }} to="/home">
+          <StyledTypography>Home</StyledTypography>
+        </Link>
         <StyledTypography>About</StyledTypography>
         <StyledTypography>Blogs</StyledTypography>
         <StyledTypography>List your property</StyledTypography>
         <StyledTypography>Contact Us</StyledTypography>
-        {showSignIn ? (
-          <BrowserRouter>
-            <Link to="/Signin" style={{ textDecoration: "none" }}>
-              <StyledTypography>Sign in</StyledTypography>
-            </Link>
-          </BrowserRouter>
+        {!appstate.user ? (
+          <Link to="/Signin" style={{ textDecoration: "none" }}>
+            <StyledTypography>Sign in</StyledTypography>
+          </Link>
         ) : (
-          <StyledTypography hoverable onClick={logout}>
-            Sign Out
+          <StyledTypography
+            onClick={() => {
+              logout(dispatch);
+            }}
+          >
+            Sign Out ({appstate.user.phoneNumber})
           </StyledTypography>
         )}
       </Stack>
