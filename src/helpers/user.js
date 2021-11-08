@@ -1,4 +1,10 @@
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
 export const saveUser = async (data) => {
@@ -35,6 +41,58 @@ export const logout = (dispatch) => {
         value: null,
       });
       alert("logged out successfully");
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+export const login = (num, dispatch) => {
+  var number = "+91" + num;
+  const auth = getAuth();
+  auth.languageCode = "en";
+  window.recaptchaVerifier = new RecaptchaVerifier(
+    "sign-in-button",
+    {
+      size: "invisible",
+      callback: (response) => {
+        console.log(response);
+      },
+    },
+    auth
+  );
+  const recaptchaVerifier = window.recaptchaVerifier;
+  signInWithPhoneNumber(auth, number, recaptchaVerifier)
+    .then(function (confirmationResult) {
+      window.confirmationResult = confirmationResult;
+      alert("A 6-digit otp has been sent to your mobile number");
+      dispatch({
+        type: "SHOW_OTP_PANEL",
+        value: true,
+      });
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
+};
+
+export const verifyUserWithOtp = (otp, dispatch) => {
+  const confirmationResult = window.confirmationResult;
+  const code = otp;
+  confirmationResult
+    .confirm(code)
+    .then((result) => {
+      const user = result.user;
+      const userDetails = {
+        uid: user.uid,
+        phoneNumber: user.phoneNumber,
+      };
+      saveUser(userDetails);
+      dispatch({
+        type: "SET_USER",
+        value: userDetails,
+      });
+      alert("signed in successfully");
     })
     .catch((error) => {
       console.log(error);

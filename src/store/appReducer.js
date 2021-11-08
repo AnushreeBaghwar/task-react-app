@@ -1,5 +1,6 @@
 export const globalState = {
   user: null,
+  showOtpPanel: false,
 };
 
 export const globalReducer = (state = globalState, action) => {
@@ -8,6 +9,11 @@ export const globalReducer = (state = globalState, action) => {
       return {
         ...state,
         user: action.value,
+      };
+    case "SHOW_OTP_PANEL":
+      return {
+        ...state,
+        showOtpPanel: action.value,
       };
     default:
       return state;
